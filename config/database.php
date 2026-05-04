@@ -1,5 +1,5 @@
 <?php
-define('BASE_URL', 'https://e-perpus-seven.vercel.app');
+define('BASE_URL', 'https://e-perpus-seven.vercel.app/');
 
 class Database {
 
