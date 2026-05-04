@@ -272,7 +272,7 @@ function getNavClass($current_page, $target_page) {
                                         <p class="font-body-main text-[11px] text-slate-500 uppercase tracking-wide">Batas Kembali: <strong class="<?= $is_terlambat ? 'text-red-600' : 'text-slate-700' ?>"><?= date('d M Y', $tgl_jatuh_tempo) ?></strong></p>
                                     </div>
                                     <div onclick="showQR('<?= $pa['kode_peminjaman'] ?>-<?= $pa['id_buku'] ?>', '<?= htmlspecialchars($pa['judul_buku'], ENT_QUOTES) ?>')" class="w-16 h-16 bg-white p-1 rounded border border-slate-200 ml-4 hidden sm:block cursor-pointer hover:ring-2 hover:ring-gold transition-all">
-                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=PINJAM-<?= $pa['kode_peminjaman'] ?>-BUKU-<?= $pa['id_buku'] ?>" alt="QR" class="w-full h-full object-contain">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=<?= BASE_URL ?>/view/siswa/SiswaDashboard.php?page=transaksi&code=PINJAM-<?= $pa['kode_peminjaman'] ?>" alt="QR" class="w-full h-full object-contain">
                                     </div>
                                 </div>
                                 <?php endforeach; ?>
@@ -745,7 +745,7 @@ function getNavClass($current_page, $target_page) {
 <script>
 function showQR(code, title) {
     document.getElementById('qrTitle').innerText = title;
-    document.getElementById('qrImage').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=PINJAM-' + code;
+    document.getElementById('qrImage').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=<?= BASE_URL ?>/view/siswa/SiswaDashboard.php?page=transaksi&code=PINJAM-' + code;
     document.getElementById('modalQR').classList.remove('hidden');
 }
 

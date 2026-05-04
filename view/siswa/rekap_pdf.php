@@ -61,10 +61,8 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $title = $filter === 'month' ? "REKAP PEMINJAMAN BULAN " . strtoupper(date('F', mktime(0, 0, 0, $month, 10))) . " " . $year : "REKAP RIWAYAT PEMINJAMAN";
 
 // Generate Tracking URL for QR Code
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-$host = $_SERVER['HTTP_HOST'];
-$uri = $_SERVER['REQUEST_URI'];
-$track_url = "$protocol://$host$uri";
+$uri = str_replace('/perpustakaan_sd/', '/', $_SERVER['REQUEST_URI']);
+$track_url = BASE_URL . $uri;
 ?>
 <!DOCTYPE html>
 <html lang="id">

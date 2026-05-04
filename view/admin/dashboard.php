@@ -481,7 +481,7 @@ function openEditPustakawan(l){
 
 function showBukuQR(kode, judul, id_buku) {
     document.getElementById('qrBukuTitle').innerText = judul;
-    document.getElementById('qrBukuImage').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=BUKU-' + kode;
+    document.getElementById('qrBukuImage').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=<?= BASE_URL ?>/index.php?q=' + kode;
     document.getElementById('modalBukuQR').classList.remove('hidden');
     
     // Fetch book status

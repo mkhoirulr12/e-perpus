@@ -1,76 +1,52 @@
 <?php
+define('BASE_URL', 'https://e-perpus-seven.vercel.app');
 
 class Database {
 
-    private $host = "localhost";
-    private $db   = "perpustakaan_sd";
-    private $user = "root";
-    private $pass = "";
+    private $host;
+    private $db;
+    private $user;
+    private $pass;
+    private $driver; // mysql or pgsql
     public $conn;
+
+    public function __construct() {
+        // Detect database configuration from environment variables (Vercel)
+        // or use local defaults
+        $this->host   = getenv('DB_HOST') ?: "localhost";
+        $this->db     = getenv('DB_NAME') ?: "perpustakaan_sd";
+        $this->user   = getenv('DB_USER') ?: "root";
+        $this->pass   = getenv('DB_PASS') ?: "";
+        $this->driver = getenv('DB_DRIVER') ?: "mysql";
+    }
 
     public function connect() {
 
         $this->conn = null;
 
         try {
+            // For Vercel Postgres, the DSN might be different, but typically it follows:
+            // pgsql:host=xxx;port=5432;dbname=xxx
+            
+            $dsn = $this->driver . ":host=" . $this->host . ";dbname=" . $this->db;
+            
+            // Some cloud providers require specific options (like SSL)
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            ];
 
-            $this->conn = new PDO(
-                "mysql:host=" . $this->host . 
-                ";dbname=" . $this->db,
-                $this->user,
-                $this->pass
-            );
-
-            $this->conn->setAttribute(
-                PDO::ATTR_ERRMODE,
-                PDO::ERRMODE_EXCEPTION
-            );
-
-            // Auto-sync schema (Replacing separate migrate files)
-            $this->ensureSchema();
+            $this->conn = new PDO($dsn, $this->user, $this->pass, $options);
 
         } catch(PDOException $e) {
+            // In production, you might want to log this instead of echoing
+            if (getenv('VERCEL')) {
+                error_log("Connection Error: " . $e->getMessage());
+                return null;
+            }
             echo "Connection Error: " . $e->getMessage();
         }
 
         return $this->conn;
-    }
-
-    private function ensureSchema() {
-        try {
-            // Update status peminjaman
-            $this->conn->exec("ALTER TABLE peminjaman MODIFY COLUMN status ENUM('diajukan', 'dipinjam', 'dikembalikan') DEFAULT 'diajukan'");
-            
-            // Tambahkan kolom id_tema ke tabel buku jika belum ada
-            $checkColumn = $this->conn->query("SHOW COLUMNS FROM buku LIKE 'id_tema'")->fetch();
-            if (!$checkColumn) {
-                $this->conn->exec("ALTER TABLE buku ADD COLUMN id_tema INT(11) DEFAULT NULL AFTER id_kategori");
-            }
-
-            // Pastikan data kategori ada
-            $countKat = $this->conn->query("SELECT COUNT(*) FROM kategori")->fetchColumn();
-            if ($countKat == 0) {
-                $this->conn->exec("INSERT INTO kategori (id_kategori, nama_kategori) VALUES (1, 'Umum'), (2, 'Pembelajaran'), (3, 'Islami')");
-            }
-
-            // Pastikan data tema ada
-            $countTema = $this->conn->query("SELECT COUNT(*) FROM tema")->fetchColumn();
-            if ($countTema == 0) {
-                $this->conn->exec("INSERT INTO tema (id_tema, nama_tema) VALUES (1, 'Fiksi'), (2, 'Non-Fiksi'), (3, 'Sains'), (4, 'Sejarah'), (5, 'Religi')");
-            }
-            // Tambahkan kolom gambar ke tabel buku jika belum ada
-            $checkGambar = $this->conn->query("SHOW COLUMNS FROM buku LIKE 'gambar'")->fetch();
-            if (!$checkGambar) {
-                $this->conn->exec("ALTER TABLE buku ADD COLUMN gambar VARCHAR(255) DEFAULT NULL AFTER lokasi_rak");
-            }
-            // Tambahkan kolom foto ke tabel siswa jika belum ada
-            $checkFoto = $this->conn->query("SHOW COLUMNS FROM siswa LIKE 'foto'")->fetch();
-            if (!$checkFoto) {
-                $this->conn->exec("ALTER TABLE siswa ADD COLUMN foto VARCHAR(255) DEFAULT NULL");
-            }
-
-        } catch (Exception $e) {
-            // Silently fail or log
-        }
     }
 }
